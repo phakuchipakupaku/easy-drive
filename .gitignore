@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# secets file
+client_secret.json
+
+# notebook
+test.ipynb

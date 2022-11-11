@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "easy-drive"
+version = "0.1.0"
+description = ""
+authors = ["mst8823"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.11"
+pydrive2 = "^1.14.0"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^5.0.4"
+black = "^22.6.0"
+isort = "^5.10.1"
+mypy = "^0.971"
+jupyter = "^1.0.0"
+ipykernel = "^6.17.0"
+pylint = "^2.15.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
