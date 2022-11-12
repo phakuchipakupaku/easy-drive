@@ -17,6 +17,7 @@ mypy = "^0.971"
 jupyter = "^1.0.0"
 ipykernel = "^6.17.0"
 pylint = "^2.15.5"
+jupyterlab = "^3.5.0"
 
 [build-system]
 requires = ["poetry-core"]
