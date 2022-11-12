@@ -33,9 +33,7 @@ class EasyDrive:
         drive_path = self.check_path(input_path=drive_path)
 
         drive_path_splitted = drive_path.split("/")
-        parent_id = drive_path_splitted.pop(0)
-
-        filename_for_key = parent_id
+        filename_for_key = parent_id = drive_path_splitted.pop(0)
         cnt = 0
         for name in drive_path_splitted:
             filename_for_key += f"/{name}"
@@ -96,9 +94,7 @@ class EasyDrive:
 
         folder_path_splitted = folder_path.split("/")
         parent_id = folder_path_splitted.pop(0)
-        filename_for_key = parent_id
-
-        existed_parent_id = parent_id
+        existed_parent_id = filename_for_key = parent_id
         for name in folder_path_splitted:
             filename_for_key += f"/{name}"
             if filename_for_key in self.parent_id_cache.keys():
