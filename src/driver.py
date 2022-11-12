@@ -26,7 +26,7 @@ class EasyDrive:
         self.driver = GoogleDrive(google_auth)
 
     def get_filelist(self, parent_id="root"):
-        query = '"{}" in parents'.format(parent_id)
+        query = '"{}" in parents and trashed=false'.format(parent_id)
         return self.driver.ListFile({"q": query}).GetList()
 
     def check_existence(self, drive_path):
@@ -66,33 +66,57 @@ class EasyDrive:
         if return_new_folder_parent_id:
             return folder.get("id")
 
-    def upload_file_to_exist_folder(self, filepath, filename, parent_id):
+    def upload_file_to_exist_folder(
+        self, filepath, filename, parent_id=None, parent_id_for_same_file=None
+    ):
         filepath = self.check_path(input_path=filepath)
-        gfile = self.driver.CreateFile()
-        gfile["parents"] = [{"id": parent_id}]
+
+        if parent_id_for_same_file is not None:
+            gfile = self.driver.CreateFile({"id": parent_id_for_same_file})
+        else:
+            gfile = self.driver.CreateFile()
+            gfile["parents"] = [{"id": parent_id}]
+
         gfile.SetContentFile(filepath)
         gfile["title"] = filename
         gfile.Upload()
 
-    def upload_file(self, filepath, drive_path):
-        filepath = self.check_path(input_path=filepath)
-        drive_path = self.check_path(input_path=drive_path)
+    def upload_file(self, local_filepath, drive_dirpath, overwirte=True):
+        local_filepath = self.check_path(input_path=local_filepath)
+        drive_dirpath = self.check_path(input_path=drive_dirpath)
 
-        ddirname, dfilename = os.path.dirname(drive_path), os.path.basename(drive_path)
-        self.create_folders_from_path(folder_path=ddirname)
-        self.upload_file_to_exist_folder(
-            filepath,
-            dfilename,
-            parent_id=self.parent_id_cache[ddirname],
-        )
+        dfilename = os.path.basename(local_filepath)
+        drive_filepath = f"{drive_dirpath}/{dfilename}"
 
-    def create_folders_from_path(self, folder_path):
-        folder_path = self.check_path(input_path=folder_path)
-        exist_folder = self.check_existence(folder_path)
+        exit_file = self.check_existence(drive_filepath)
+        if exit_file:
+            if overwirte:
+                print(
+                    f"This file ({drive_filepath}) already exists in your Google Drive. It will be overwritten."
+                )
+                same_exitence_id = self.parent_id_cache[drive_filepath]
+                self.upload_file_to_exist_folder(
+                    local_filepath, dfilename, parent_id_for_same_file=same_exitence_id
+                )
+            else:
+                print(
+                    f"This file ({drive_filepath}) already exists in your Google Drive."
+                )
+        else:
+            self.create_folders_from_path(drive_dirpath)
+            self.upload_file_to_exist_folder(
+                local_filepath,
+                dfilename,
+                parent_id=self.parent_id_cache[drive_dirpath],
+            )
+
+    def create_folders_from_path(self, drive_dirpath):
+        drive_dirpath = self.check_path(input_path=drive_dirpath)
+        exist_folder = self.check_existence(drive_dirpath)
         if exist_folder:
             return
 
-        folder_path_splitted = folder_path.split("/")
+        folder_path_splitted = drive_dirpath.split("/")
         parent_id = folder_path_splitted.pop(0)
         existed_parent_id = filename_for_key = parent_id
         for name in folder_path_splitted:
@@ -107,6 +131,18 @@ class EasyDrive:
                     return_new_folder_parent_id=True,
                 )
                 existed_parent_id = self.parent_id_cache[filename_for_key] = parent_id
+
+    def download_file(self, local_dirpath, drive_filepath):
+        """drive 上の特定のファイルを local上の特定のフォルダにダウンロードする"""
+        drive_filepath = self.check_path(drive_filepath)
+        exit_file = self.check_existence(drive_path=drive_filepath)
+        if not exit_file:
+            raise FileNotFoundError()
+
+        os.makedirs(local_dirpath, exist_ok=True)
+
+        f = self.driver.CreateFile({"id": self.parent_id_cache[drive_filepath]})
+        f.GetContentFile(os.path.join(local_dirpath, f["title"]))
 
     @staticmethod
     def check_path(input_path):
