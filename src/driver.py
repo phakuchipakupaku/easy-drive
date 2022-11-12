@@ -5,25 +5,24 @@ from pydrive2.drive import GoogleDrive
 
 
 class EasyDrive:
-    def __init__(
+    driver = None
+
+    def __init__(self):
+        self.parent_id_cache = {}
+
+    def auth(
         self,
         client_config_file="client_secret.json",
         your_env="paperspace-gradient",
     ):
-        self.client_config_file = client_config_file
-        self.your_env = your_env
-        self.driver = None
-        self.parent_id_cache = {}
-
-    def auth(self):
         google_auth = GoogleAuth()
-        google_auth.DEFAULT_SETTINGS["client_config_file"] = self.client_config_file
+        google_auth.DEFAULT_SETTINGS["client_config_file"] = client_config_file
 
-        if self.your_env == "paperspace-gradient":
+        if your_env == "paperspace-gradient":
             google_auth.CommandLineAuth()
         else:
             google_auth.LocalWebserverAuth()
-        self.driver = GoogleDrive(google_auth)
+        EasyDrive.driver = GoogleDrive(google_auth)
 
     def get_filelist(self, parent_id="root"):
         query = '"{}" in parents and trashed=false'.format(parent_id)
@@ -67,7 +66,11 @@ class EasyDrive:
             return folder.get("id")
 
     def upload_file_to_exist_folder(
-        self, filepath, filename, parent_id=None, parent_id_for_same_file=None
+        self,
+        filepath,
+        filename,
+        parent_id=None,
+        parent_id_for_same_file=None,
     ):
         filepath = self.check_path(input_path=filepath)
 
