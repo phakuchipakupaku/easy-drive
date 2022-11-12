@@ -82,6 +82,8 @@ class EasyDrive:
 
         gfile.SetContentFile(filepath)
         gfile["title"] = filename
+
+        print(f"Uploading... ({filepath})")
         gfile.Upload()
 
     def upload_file(self, local_filepath, drive_dirpath, overwirte=True):
@@ -128,6 +130,7 @@ class EasyDrive:
                 existed_parent_id = self.parent_id_cache[filename_for_key]
                 continue
             else:
+                print(f"Creating folder... {filename_for_key}")
                 parent_id = self.create_one_folder(
                     folder_name=name,
                     parent_id=existed_parent_id,
@@ -137,6 +140,7 @@ class EasyDrive:
 
     def download_file(self, local_dirpath, drive_filepath):
         """drive 上の特定のファイルを local上の特定のフォルダにダウンロードする"""
+        print(f"Downloading... {drive_filepath}")
         drive_filepath = self.check_path(drive_filepath)
         exit_file = self.check_existence(drive_path=drive_filepath)
         if not exit_file:
