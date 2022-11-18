@@ -12,17 +12,28 @@ class EasyDrive:
 
     def auth(
         self,
-        client_config_file="client_secret.json",
+        settings=None,
         your_env="paperspace-gradient",
     ):
-        google_auth = GoogleAuth()
-        google_auth.DEFAULT_SETTINGS["client_config_file"] = client_config_file
+        if settings is None:
+            settings = self.get_default_settings()
+        google_auth = GoogleAuth(settings=settings)
 
         if your_env == "paperspace-gradient":
             google_auth.CommandLineAuth()
         else:
             google_auth.LocalWebserverAuth()
         EasyDrive.driver = GoogleDrive(google_auth)
+
+    @staticmethod
+    def get_default_settings():
+        return {
+            "client_config_file": "client_secret.json",
+            "save_credentials": True,
+            "save_credentials_backend": "file",
+            "save_credentials_file": "saved_credentials.json",
+            "get_refresh_token": True,
+        }
 
     def get_filelist(self, parent_id="root"):
         query = '"{}" in parents and trashed=false'.format(parent_id)
